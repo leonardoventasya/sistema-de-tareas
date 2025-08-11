@@ -10,13 +10,14 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Rutas
+// --- LA CONEXIÓN CLAVE ---
+// Le decimos a Express que use nuestro archivo de rutas para cualquier petición a /api/tasks
 const tasksRouter = require('./routes/tasks');
 app.use('/api/tasks', tasksRouter);
 
 // Ruta de prueba para saber si el servidor está vivo
 app.get('/', (req, res) => {
-  res.send('El servidor de tareas está funcionando correctamente!');
+  res.send('¡El servidor de tareas está funcionando correctamente!');
 });
 
 app.listen(PORT, () => {

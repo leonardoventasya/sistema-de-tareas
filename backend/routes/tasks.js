@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ error: 'El texto y la fecha son obligatorios.' });
     }
     const { rows } = await db.query(
-      'INSERT INTO tasks (text, due_date) VALUES ($1, $2) RETURNING *',
+      'INSERT INTO tasks (text, due_date, is_completed) VALUES ($1, $2, false) RETURNING *',
       [text, due_date]
     );
     res.status(201).json(rows[0]);
@@ -59,7 +59,7 @@ router.delete('/:id', async (req, res) => {
     if (result.rowCount === 0) {
         return res.status(404).json({ error: 'Tarea no encontrada.' });
     }
-    res.status(204).send(); // 204 significa "sin contenido", éxito
+    res.status(204).send();
   } catch (err) {
     console.error(`Error en DELETE /api/tasks/${req.params.id}:`, err.message);
     res.status(500).send('Server Error');
