@@ -6,26 +6,14 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// --- CONFIGURACIÓN DE CORS MEJORADA ---
-const whitelist = [
-    'http://localhost:5173', // Para desarrollo local
-    'https://tareas-frontend-hrfo.onrender.com' // <-- TU URL DE FRONTEND EN PRODUCCIÓN
-];
+// --- CONFIGURACIÓN DE CORS SIMPLIFICADA Y UNIVERSAL ---
+// Esto le dice a nuestro servidor que acepte peticiones desde cualquier origen.
+app.use(cors());
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-};
-
-app.use(cors(corsOptions));
+// El resto del middleware
 app.use(express.json());
 
-// Routes
+// Rutas
 const tasksRouter = require('./routes/tasks');
 app.use('/api/tasks', tasksRouter);
 
