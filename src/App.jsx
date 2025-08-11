@@ -6,7 +6,7 @@ import BearTasky from './components/BearTasky';
 
 // --- URL BASE DE LA API ---
 // "Hardcodeada" para garantizar que funcione en producción.
-const API_BASE_URL = 'https://tareas-backend-aovk.onrender.com';
+const API_BASE_URL = 'https://tareas-backend-xa8b.onrender.com';
 
 // --- FUNCIONES Y COMPONENTES DE AYUDA ---
 const getLocalYYYYMMDD = (date = new Date()) => {
