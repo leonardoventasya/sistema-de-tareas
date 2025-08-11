@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
     const { rows } = await db.query('SELECT * FROM tasks ORDER BY due_date ASC, id ASC');
     res.json(rows);
   } catch (err) {
-    console.error(err.message);
+    console.error("Error en GET /api/tasks:", err.message);
     res.status(500).send('Server Error');
   }
 });
@@ -18,13 +18,16 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { text, due_date } = req.body;
+    if (!text || !due_date) {
+        return res.status(400).json({ error: 'El texto y la fecha son obligatorios.' });
+    }
     const { rows } = await db.query(
       'INSERT INTO tasks (text, due_date) VALUES ($1, $2) RETURNING *',
       [text, due_date]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
-    console.error(err.message);
+    console.error("Error en POST /api/tasks:", err.message);
     res.status(500).send('Server Error');
   }
 });
@@ -38,9 +41,12 @@ router.put('/:id', async (req, res) => {
       'UPDATE tasks SET text = $1, due_date = $2, is_completed = $3 WHERE id = $4 RETURNING *',
       [text, due_date, is_completed, id]
     );
+    if (rows.length === 0) {
+        return res.status(404).json({ error: 'Tarea no encontrada.' });
+    }
     res.json(rows[0]);
   } catch (err) {
-    console.error(err.message);
+    console.error(`Error en PUT /api/tasks/${req.params.id}:`, err.message);
     res.status(500).send('Server Error');
   }
 });
@@ -49,10 +55,13 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await db.query('DELETE FROM tasks WHERE id = $1', [id]);
+    const result = await db.query('DELETE FROM tasks WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Tarea no encontrada.' });
+    }
     res.status(204).send(); // 204 significa "sin contenido", éxito
   } catch (err) {
-    console.error(err.message);
+    console.error(`Error en DELETE /api/tasks/${req.params.id}:`, err.message);
     res.status(500).send('Server Error');
   }
 });
