@@ -18,9 +18,8 @@ app.use(express.json());
 const tasksRouter = require('./routes/tasks');
 app.use('/api/tasks', tasksRouter);
 
-// Ruta de prueba
 app.get('/', (req, res) => {
-  res.send('El servidor de tareas está funcionando correctamente!');
+  res.send('VERSIÓN FINAL DEL SERVIDOR - ¡Ahora sí!');
 });
 
 // --- INICIAR SERVIDOR ---
