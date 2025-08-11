@@ -7,7 +7,7 @@ import BearTasky from './components/BearTasky';
 // --- URL BASE DE LA API ---
 // En producción (Render), usará la variable de entorno.
 // En desarrollo (tu PC), usará la dirección local.
-const API_BASE_URL = 'https://tareas-backend-aovk.onrender.com';
+const API_BASE_URL = 'https://tareas-backend-xa8b.onrender.com';
 
 // --- FUNCIONES Y COMPONENTES DE AYUDA ---
 const getLocalYYYYMMDD = (date = new Date()) => {
