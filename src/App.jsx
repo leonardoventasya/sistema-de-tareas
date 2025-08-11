@@ -5,9 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import BearTasky from './components/BearTasky';
 
 // --- URL BASE DE LA API ---
-// En producción (Render), usará la variable de entorno.
-// En desarrollo (tu PC), usará la dirección local.
-const API_BASE_URL = 'https://tareas-backend-xa8b.onrender.com';
+// "Hardcodeada" para garantizar que funcione en producción.
+const API_BASE_URL = 'https://tareas-backend-aovk.onrender.com';
 
 // --- FUNCIONES Y COMPONENTES DE AYUDA ---
 const getLocalYYYYMMDD = (date = new Date()) => {
@@ -40,7 +39,7 @@ function App() {
         const response = await fetch(`${API_BASE_URL}/api/tasks`);
         if (!response.ok) throw new Error('La respuesta de la red no fue ok');
         const data = await response.json();
-        const formattedTasks = data.map(task => ({ ...task, due_date: getLocalYYYYMMDD(new Date(task.due_date)) }));
+        const formattedTasks = data.map(task => ({ ...task, due_date: task.due_date.slice(0, 10) }));
         setTasks(formattedTasks);
       } catch (error) {
         toast.error('Error al cargar las tareas. ¿El servidor está corriendo?');
@@ -59,7 +58,7 @@ function App() {
     const totalToday = tasksForToday.length;
     setDailyStats({ completed: completedToday, total: totalToday });
     const currentHour = new Date().getHours();
-    if (tasks.filter(t => !t.is_completed).length === 0 && tasks.length > 0) {
+    if (tasks.length > 0 && tasks.every(t => t.is_completed)) {
       setTaskyMood('happy'); return;
     }
     const completionPercentage = totalToday > 0 ? (completedToday / totalToday) * 100 : 0;
@@ -78,7 +77,7 @@ function App() {
         body: JSON.stringify({ text: newTask, due_date: newDate }),
       });
       const createdTask = await response.json();
-      createdTask.due_date = getLocalYYYYMMDD(new Date(createdTask.due_date));
+      createdTask.due_date = createdTask.due_date.slice(0, 10);
       setTasks([...tasks, createdTask]);
       toast.success('¡Tarea agregada!');
       setNewTask('');
@@ -98,7 +97,7 @@ function App() {
   const handleToggleComplete = async (taskId) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
-    const updatedTaskData = { ...task, text: task.text, due_date: task.due_date, is_completed: !task.is_completed };
+    const updatedTaskData = { ...task, is_completed: !task.is_completed };
     try {
       const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
         method: 'PUT',
@@ -106,7 +105,7 @@ function App() {
         body: JSON.stringify(updatedTaskData),
       });
       const returnedTask = await response.json();
-      returnedTask.due_date = getLocalYYYYMMDD(new Date(returnedTask.due_date));
+      returnedTask.due_date = returnedTask.due_date.slice(0, 10);
       setTasks(tasks.map(t => t.id === taskId ? returnedTask : t));
       if (returnedTask.is_completed) toast.success(`¡"${returnedTask.text}" completada!`, { icon: '🎉' });
     } catch (error) { toast.error('No se pudo actualizar la tarea.'); }
@@ -115,7 +114,7 @@ function App() {
   const handleSaveEdit = async (taskId) => {
     if (editingText.trim() === '') return toast.error('El texto no puede estar vacío.');
     const task = tasks.find(t => t.id === taskId);
-    const updatedTaskData = { ...task, text: editingText, due_date: editingDate, is_completed: task.is_completed };
+    const updatedTaskData = { ...task, text: editingText, due_date: editingDate };
     try {
       const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
         method: 'PUT',
@@ -123,7 +122,7 @@ function App() {
         body: JSON.stringify(updatedTaskData),
       });
       const returnedTask = await response.json();
-      returnedTask.due_date = getLocalYYYYMMDD(new Date(returnedTask.due_date));
+      returnedTask.due_date = returnedTask.due_date.slice(0, 10);
       setTasks(tasks.map(t => t.id === taskId ? returnedTask : t));
       setEditingTaskId(null);
       toast.success('Tarea actualizada.');
