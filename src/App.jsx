@@ -4,13 +4,17 @@ import toast, { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import BearTasky from './components/BearTasky';
 
-const API_URL = 'http://localhost:3001/api/tasks';
+// --- URL BASE DE LA API ---
+// En producción (Render), usará la variable de entorno.
+// En desarrollo (tu PC), usará la dirección local.
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-// --- FUNCIONES Y COMPONENTES DE AYUDA (COMPLETOS) ---
+// --- FUNCIONES Y COMPONENTES DE AYUDA ---
 const getLocalYYYYMMDD = (date = new Date()) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
 
@@ -33,13 +37,10 @@ function App() {
     const fetchTasks = async () => {
       setLoading(true);
       try {
-        const response = await fetch(API_URL);
-        if (!response.ok) throw new Error('Network response was not ok');
+        const response = await fetch(`${API_BASE_URL}/api/tasks`);
+        if (!response.ok) throw new Error('La respuesta de la red no fue ok');
         const data = await response.json();
-        const formattedTasks = data.map(task => ({
-          ...task,
-          due_date: getLocalYYYYMMDD(new Date(task.due_date)),
-        }));
+        const formattedTasks = data.map(task => ({ ...task, due_date: getLocalYYYYMMDD(new Date(task.due_date)) }));
         setTasks(formattedTasks);
       } catch (error) {
         toast.error('Error al cargar las tareas. ¿El servidor está corriendo?');
@@ -53,7 +54,7 @@ function App() {
 
   useEffect(() => {
     const todayStr = getLocalYYYYMMDD();
-    const tasksForToday = tasks.filter(task => task.date === todayStr || task.due_date === todayStr);
+    const tasksForToday = tasks.filter(task => task.due_date === todayStr);
     const completedToday = tasksForToday.filter(task => task.is_completed).length;
     const totalToday = tasksForToday.length;
     setDailyStats({ completed: completedToday, total: totalToday });
@@ -71,7 +72,7 @@ function App() {
     e.preventDefault();
     if (newTask.trim() === '') return toast.error('La tarea no puede estar vacía.');
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_BASE_URL}/api/tasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: newTask, due_date: newDate }),
@@ -88,8 +89,8 @@ function App() {
     const originalTasks = [...tasks];
     setTasks(tasks.filter(task => task.id !== taskId));
     try {
-      const response = await fetch(`${API_URL}/${taskId}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete');
+      const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Fallo al eliminar');
       toast.error('Tarea eliminada.');
     } catch (error) { toast.error('Error al eliminar. Restaurando tarea.'); setTasks(originalTasks); }
   };
@@ -99,7 +100,7 @@ function App() {
     if (!task) return;
     const updatedTaskData = { ...task, text: task.text, due_date: task.due_date, is_completed: !task.is_completed };
     try {
-      const response = await fetch(`${API_URL}/${taskId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedTaskData),
@@ -116,7 +117,7 @@ function App() {
     const task = tasks.find(t => t.id === taskId);
     const updatedTaskData = { ...task, text: editingText, due_date: editingDate, is_completed: task.is_completed };
     try {
-      const response = await fetch(`${API_URL}/${taskId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedTaskData),
@@ -140,13 +141,14 @@ function App() {
     acc[group].push(task);
     return acc;
   }, {});
+  
   const groupOrder = ['Hoy', 'Mañana', 'Próximas', 'Completadas'];
 
   if (loading) {
     return (
       <div className="bg-slate-900 text-white min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-xl">Cargando tu sistema de tareas...</p>
+          <p className="text-xl animate-pulse">Cargando tu sistema de tareas...</p>
         </div>
       </div>
     );
