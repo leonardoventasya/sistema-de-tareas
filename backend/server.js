@@ -6,20 +6,24 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middlewares
+// --- MIDDLEWARE ---
+// 1. Habilitar CORS para aceptar peticiones de cualquier origen.
 app.use(cors());
+
+// 2. Habilitar el "traductor" de JSON. ¡ESTA ES LA LÍNEA CLAVE!
+// Debe estar ANTES de que se definan las rutas.
 app.use(express.json());
 
-// --- LA CONEXIÓN CLAVE ---
-// Le decimos a Express que use nuestro archivo de rutas para cualquier petición a /api/tasks
+// --- RUTAS ---
 const tasksRouter = require('./routes/tasks');
 app.use('/api/tasks', tasksRouter);
 
-// Ruta de prueba para saber si el servidor está vivo
+// Ruta de prueba
 app.get('/', (req, res) => {
-  res.send('¡El servidor de tareas está funcionando correctamente!');
+  res.send('El servidor de tareas está funcionando correctamente!');
 });
 
+// --- INICIAR SERVIDOR ---
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
 });

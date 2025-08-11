@@ -41,9 +41,7 @@ router.put('/:id', async (req, res) => {
       'UPDATE tasks SET text = $1, due_date = $2, is_completed = $3 WHERE id = $4 RETURNING *',
       [text, due_date, is_completed, id]
     );
-    if (rows.length === 0) {
-        return res.status(404).json({ error: 'Tarea no encontrada.' });
-    }
+    if (rows.length === 0) return res.status(404).json({ error: 'Tarea no encontrada.' });
     res.json(rows[0]);
   } catch (err) {
     console.error(`Error en PUT /api/tasks/${req.params.id}:`, err.message);
@@ -56,9 +54,7 @@ router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const result = await db.query('DELETE FROM tasks WHERE id = $1 RETURNING *', [id]);
-    if (result.rowCount === 0) {
-        return res.status(404).json({ error: 'Tarea no encontrada.' });
-    }
+    if (result.rowCount === 0) return res.status(404).json({ error: 'Tarea no encontrada.' });
     res.status(204).send();
   } catch (err) {
     console.error(`Error en DELETE /api/tasks/${req.params.id}:`, err.message);
